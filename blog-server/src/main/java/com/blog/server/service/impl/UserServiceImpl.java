@@ -1,5 +1,7 @@
 package com.blog.server.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.blog.common.entity.User;
 import com.blog.server.dto.LoginDTO;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 @Service
 @RequiredArgsConstructor
@@ -25,17 +28,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public String login(LoginDTO dto) {
+        LambdaQueryWrapper<User> query = Wrappers.lambdaQuery();
+        query.eq(User::getUsername, dto.getUsername());
 
-        String querySql = "select * from user where username = ? and password = ?";
-        User user = jdbcTemplate.queryForObject(
-                querySql,
-                new BeanPropertyRowMapper<>(User.class),
-                dto.getUsername(),
-                dto.getPassword());
+        User user = userMapper.selectOne(query);
 
-        if(user == null) {
-            throw new IllegalArgumentException("not find user");
-        }
+        Assert.notNull(user, "not find user");
 
         verifyPassword(dto, user);
 
@@ -43,9 +41,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void create(UserDTO dto) {
-        String sql = "insert into user (username,password,create_by,update_by) values (?,?,?,?)";
-        jdbcTemplate.update(sql, dto.getUsername(), EncryptUtil.encryptPassword(dto.getPassword()), "admin", "admin");
+    public Long create(UserDTO dto) {
+        LambdaQueryWrapper<User> query = Wrappers.lambdaQuery(User.class);
+        query.eq(User::getUsername, dto.getUsername());
+
+        Long count = userMapper.selectCount(query);
+        Assert.isTrue(count == 0, "用户名已存在");
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(EncryptUtil.encryptPassword(dto.getPassword()));
+        user.setCreateBy(0L);
+        user.setUpdateBy(0L);
+
+        userMapper.insert(user);
+
+        return user.getId();
     }
 
     private void verifyPassword(LoginDTO dto, User user) {

@@ -43,7 +43,7 @@ public class TokenStore {
         DecodedJWT tmp = verifyToken(token);
 
         Claim claim = tmp.getClaim(Token.Claim.UserId.getKey());
-        Long userId = Long.parseLong(claim.asString());
+        Long userId = claim.asLong();
 
         return new DecodedToken(userId);
     }
@@ -54,7 +54,7 @@ public class TokenStore {
             Date date = new Date(new Date().getTime() + authProperties.getExp());
             return JWT.create()
                     .withIssuer(authProperties.getIssuer())
-                    .withClaim(TokenConstance.USERNAME, user.getUsername())
+                    .withClaim(Token.Claim.UserId.getKey(), user.getId())
                     .withExpiresAt(date)
                     .sign(algorithm);
         } catch (JWTCreationException e){

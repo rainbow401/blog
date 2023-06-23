@@ -5,6 +5,10 @@ import com.blog.common.entity.Article;
 import com.blog.server.dto.ArticleCreationDTO;
 import com.blog.server.dto.ArticleUpdateDTO;
 import com.blog.server.vo.ArticleVO;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * <p>
@@ -21,4 +25,14 @@ public interface ArticleService extends IService<Article> {
     ArticleVO findById(String articleId);
 
     void updateArticle(ArticleUpdateDTO dto);
+
+    void likeArticle(Long id);
+
+    void collectArticle(Long id);
+
+    void cancelLikeArticle(Long id);
+
+    void cancelCollectArticle(Long id);
+
+    void uploadMdArticle(List<MultipartFile> files) throws IOException;
 }

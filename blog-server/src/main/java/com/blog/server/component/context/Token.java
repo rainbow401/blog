@@ -6,7 +6,7 @@ package com.blog.server.component.context;
  */
 public interface Token {
 
-    String TOKEN = "TOKEN";
+    String TOKEN = "Authorization";
 
     enum Claim {
 

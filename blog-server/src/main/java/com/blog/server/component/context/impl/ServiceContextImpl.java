@@ -24,7 +24,7 @@ public class ServiceContextImpl implements ServiceContext {
 
     @Override
     public void extract(HttpServletRequest request) {
-        String tokenStr = request.getHeader(Token.TOKEN);
+        String tokenStr = request.getHeader(Token.TOKEN).substring(7);
         Token token = tokenStr != null ? tokenStore.extract(tokenStr) : null;
         if (token != null) {
             TOKEN.set(token);

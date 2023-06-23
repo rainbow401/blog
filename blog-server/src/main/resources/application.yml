@@ -57,7 +57,8 @@ mybatis-plus:
   global-config:
     db-config:
       # 注意更新策略，默认空值、null值不更新
-      update-strategy: not_empty
+      update-strategy: NOT_NULL
+      insert-strategy: NOT_NULL
   mapper-locations: classpath:mapper/*.xml
 
 auth:

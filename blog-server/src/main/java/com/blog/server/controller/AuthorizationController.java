@@ -13,21 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthorizationController {
 
-    private final AuthProperties authProperties;
 
-    private final UserService userService;
 
-    private final TokenStore tokenStore;
-
-    @PostMapping("/login")
-    public ResponseResult<String> login(LoginDTO dto) {
-        return ResponseResult.success(userService.login(dto));
-    }
-
-    @GetMapping("/check")
-    public Boolean checkToken(@RequestHeader("Authorization") String token) {
-        tokenStore.verifyToken(token);
-        return true;
-    }
 
 }

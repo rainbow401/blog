@@ -1,10 +1,8 @@
 package com.blog.common.entity;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class User extends BaseAutoIdEntity {
 
     /**

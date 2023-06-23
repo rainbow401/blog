@@ -16,7 +16,6 @@ import java.util.List;
  * @author yanzhihao
  * @since 2022-07-06
  */
-@Mapper
 public interface ArticleTagMapper extends BaseMapper<ArticleTag> {
 
     List<String> findAllTagNameByArticleId(@Param("articleId") String articleId);

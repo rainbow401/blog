@@ -12,7 +12,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @author yanzhihao
  * @since 2022-07-06
  */
-@Mapper
 public interface TagMapper extends BaseMapper<Tag> {
 
 }

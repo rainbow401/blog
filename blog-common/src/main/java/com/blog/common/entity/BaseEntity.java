@@ -1,27 +1,29 @@
 package com.blog.common.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableLogic;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
-public class BaseEntity {
+@Data
+public class BaseEntity implements Serializable {
 
+    @TableField(fill = FieldFill.INSERT)
     private Long createBy;
 
     private LocalDateTime createTime;
 
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     private LocalDateTime updateTime;
 
     @TableLogic(value = "0", delval = "1")
     private Boolean deleted;
+
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 }
