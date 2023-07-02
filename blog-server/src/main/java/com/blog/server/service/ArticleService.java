@@ -1,8 +1,10 @@
 package com.blog.server.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.blog.common.entity.Article;
 import com.blog.server.dto.ArticleCreationDTO;
+import com.blog.server.dto.ArticleQueryDTO;
 import com.blog.server.dto.ArticleUpdateDTO;
 import com.blog.server.vo.ArticleVO;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +22,8 @@ import java.util.List;
  */
 public interface ArticleService extends IService<Article> {
 
+    Page<Article> page(ArticleQueryDTO dto) throws IllegalAccessException;
+
     Long addArticle(ArticleCreationDTO dto);
 
     ArticleVO findById(String articleId);
@@ -34,5 +38,5 @@ public interface ArticleService extends IService<Article> {
 
     void cancelCollectArticle(Long id);
 
-    void uploadMdArticle(List<MultipartFile> files) throws IOException;
+    void uploadMdArticle(Long tagId, List<MultipartFile> files) throws IOException;
 }

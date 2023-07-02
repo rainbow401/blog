@@ -1,11 +1,17 @@
 package com.blog.server.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.blog.common.dto.PageDTO;
 import com.blog.common.entity.Article;
+import com.blog.common.entity.BaseEntity;
 import com.blog.common.resopnse.ResponseResult;
+import com.blog.common.util.query.QueryParam;
+import com.blog.common.util.query.QueryUtil;
 import com.blog.server.dto.ArticleCreationDTO;
+import com.blog.server.dto.ArticleQueryDTO;
 import com.blog.server.dto.ArticleUpdateDTO;
 import com.blog.server.service.ArticleService;
 import com.blog.server.vo.ArticleVO;
@@ -42,8 +48,8 @@ public class ArticleController {
      * @return ResponseResult<Page<Article>>
      */
     @GetMapping("/page")
-    public ResponseResult<Page<Article>> page(PageDTO dto) {
-        return ResponseResult.success(articleService.page(new Page<>(dto.getPageNo(), dto.getPageSize())));
+    public ResponseResult<Page<Article>> page(ArticleQueryDTO dto) throws IllegalAccessException {
+        return ResponseResult.success(articleService.page(dto));
     }
 
     /**
@@ -129,9 +135,15 @@ public class ArticleController {
         return ResponseResult.success();
     }
 
-    @PostMapping("/upload")
-    public ResponseResult<Void> uploadMdArticle(@RequestPart("files") List<MultipartFile> files) throws IOException {
-        articleService.uploadMdArticle(files);
+    /**
+     * 批量上传md
+     * @param files md
+     */
+    @PostMapping("/{tagId}/upload")
+    public ResponseResult<Void> uploadMdArticle(
+            @RequestPart("files") List<MultipartFile> files,
+            @PathVariable("tagId") Long tagId) throws IOException {
+        articleService.uploadMdArticle(tagId, files);
         return ResponseResult.success();
     }
 }

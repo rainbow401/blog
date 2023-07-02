@@ -10,8 +10,10 @@ import com.blog.common.entity.User;
 import com.blog.server.component.context.Token;
 import com.blog.server.config.AuthProperties;
 import com.blog.server.constance.TokenConstance;
+import com.blog.server.exceptions.AuthorizationException;
 import org.springframework.stereotype.Component;
 
+import javax.security.sasl.AuthenticationException;
 import java.util.Date;
 import java.util.Map;
 
@@ -39,13 +41,16 @@ public class TokenStore {
     }
 
     public Token extract(String token) {
+        try {
+            DecodedJWT tmp = verifyToken(token);
 
-        DecodedJWT tmp = verifyToken(token);
+            Claim claim = tmp.getClaim(Token.Claim.UserId.getKey());
+            Long userId = claim.asLong();
 
-        Claim claim = tmp.getClaim(Token.Claim.UserId.getKey());
-        Long userId = claim.asLong();
-
-        return new DecodedToken(userId);
+            return new DecodedToken(userId);
+        } catch (Exception e) {
+            throw new AuthorizationException();
+        }
     }
 
     public String generateToken(User user) {

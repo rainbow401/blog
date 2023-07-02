@@ -1,22 +1,26 @@
 package com.blog.server.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Assert;
-import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.blog.common.entity.*;
+import com.blog.common.util.query.QueryUtil;
 import com.blog.server.component.context.ServiceContext;
 import com.blog.server.dto.ArticleCreationDTO;
 import com.blog.server.convert.ArticleConvertMapper;
+import com.blog.server.dto.ArticleQueryDTO;
 import com.blog.server.dto.ArticleUpdateDTO;
 import com.blog.server.mapper.*;
 import com.blog.server.service.ArticleService;
 import com.blog.server.service.ArticleTagService;
 import com.blog.server.vo.ArticleVO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -46,6 +50,22 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleTagService articleTagService;
 
     private final ServiceContext ctx;
+
+    @Override
+    public Page<Article> page(ArticleQueryDTO dto) throws IllegalAccessException {
+        QueryWrapper<Article> query = QueryUtil.convert(dto);
+        Page<Article> page = new Page<>(dto.getPageNo(), dto.getPageSize());
+
+        if (dto.getMyself()) {
+            // 仅查看我自己
+            LambdaQueryWrapper<Article> lambdaQuery = query.lambda();
+            lambdaQuery.eq(BaseEntity::getCreateBy, ctx.currentUserId());
+
+            return articleMapper.selectPage(page, lambdaQuery);
+        } else {
+            return articleMapper.selectPage(page, query);
+        }
+    }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -161,7 +181,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void uploadMdArticle(List<MultipartFile> files) throws IOException {
+    public void uploadMdArticle(Long tagId, List<MultipartFile> files) throws IOException {
+
+        LambdaQueryWrapper<Tag> queryWrapper = Wrappers.lambdaQuery(Tag.class).eq(Tag::getId, tagId);
+        boolean exists = tagMapper.exists(queryWrapper);
+
+        Assert.isTrue(exists, "标签不存在");
+
         for (MultipartFile file : files) {
             String fileName = file.getOriginalFilename();
             Assert.isTrue(fileName != null, "文件名为空");
@@ -177,16 +203,41 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private void importMdArticle(MultipartFile file) throws IOException {
         String content = new String(file.getBytes());
+
+        Assert.hasText(content, "文章内容不能为空");
+
+        // 提取标题
         String title = getFirstTitle(content);
         if (StringUtils.isBlank(title)) {
-            title = content.substring(0, 20) + "...";
+            // 提取不到标题内容则取前20个字符
+            title = content.substring(0, Math.min(content.length(), 20)) + "...";
+        }
+
+        // 提取摘要
+        String summary = getSummary(content);
+        if (StringUtils.isBlank(summary)) {
+            summary = content.substring(0, Math.min(content.length(), 100)) + "...";
         }
 
         Article article = new Article();
         article.setContent(content);
         article.setTitle(title);
+        article.setSummary(summary);
 
         articleMapper.insert(article);
+    }
+
+    private String getSummary(String content) {
+        String regex = "^(?!#).{1,}";
+        Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+        Matcher matcher = pattern.matcher(content);
+
+        if (matcher.find()) {
+            String text = matcher.group().trim();
+            return text.substring(0, Math.min(text.length(), 100));
+        }
+
+        return null;
     }
 
     private static String getFirstTitle(String content) {

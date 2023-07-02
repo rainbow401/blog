@@ -8,6 +8,9 @@ import com.blog.server.util.TokenStore;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * 用户
+ */
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor

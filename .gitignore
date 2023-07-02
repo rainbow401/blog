@@ -39,4 +39,3 @@ build/
 .idea
 .mvn
 /logs/
-/blog-server/src/test/

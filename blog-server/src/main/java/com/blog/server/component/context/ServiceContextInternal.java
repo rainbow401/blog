@@ -1,5 +1,6 @@
 package com.blog.server.component.context;
 
+import javax.security.sasl.AuthenticationException;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -17,5 +18,5 @@ public interface ServiceContextInternal {
     /**
      * 存放信息
      */
-    void extract(HttpServletRequest request);
+    void extract(HttpServletRequest request) throws AuthenticationException;
 }

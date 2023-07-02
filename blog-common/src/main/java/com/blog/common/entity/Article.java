@@ -25,6 +25,11 @@ public class Article extends BaseEntity {
     private String title;
 
     /**
+     * 文章摘要
+     */
+    private String summary;
+
+    /**
      * 内容
      */
     private String content;

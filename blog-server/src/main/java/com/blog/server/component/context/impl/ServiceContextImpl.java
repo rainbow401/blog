@@ -2,8 +2,11 @@ package com.blog.server.component.context.impl;
 
 import com.blog.server.component.context.ServiceContext;
 import com.blog.server.component.context.Token;
+import com.blog.server.exceptions.AuthorizationException;
 import com.blog.server.util.TokenStore;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -23,9 +26,14 @@ public class ServiceContextImpl implements ServiceContext {
     private TokenStore tokenStore;
 
     @Override
-    public void extract(HttpServletRequest request) {
-        String tokenStr = request.getHeader(Token.TOKEN).substring(7);
-        Token token = tokenStr != null ? tokenStore.extract(tokenStr) : null;
+    public void extract(HttpServletRequest request) throws AuthorizationException {
+        String header = request.getHeader(Token.TOKEN);
+        if (StringUtils.isNotBlank(header)) {
+            throw new AuthorizationException();
+        }
+
+        String tokenStr = header.substring(7);
+        Token token = tokenStore.extract(tokenStr);
         if (token != null) {
             TOKEN.set(token);
             USERID.set(token.getUserid());

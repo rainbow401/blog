@@ -17,4 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag> implements TagService {
 
+    @Override
+    public Long add(String name) {
+        Tag tag = new Tag();
+        tag.setName(name);
+        this.save(tag);
+        return tag.getId();
+    }
 }

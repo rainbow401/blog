@@ -10,7 +10,6 @@ import lombok.EqualsAndHashCode;
  * @since 2022-07-06
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
 public class Tag extends BaseEntity {
 
     @TableId(value = "id", type = IdType.AUTO)

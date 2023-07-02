@@ -54,6 +54,17 @@ public class ResponseResult<T> {
         return responseResult;
     }
 
+    public static <T> ResponseResult<T> fail(Integer code, String message) {
+
+        ResponseResult<T> responseResult = new ResponseResult<>();
+        responseResult.code = 200;
+        responseResult.success = false;
+        responseResult.message = message;
+        responseResult.data = null;
+
+        return responseResult;
+    }
+
     public Integer getCode() {
         return code;
     }

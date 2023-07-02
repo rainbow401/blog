@@ -13,4 +13,5 @@ import com.blog.common.entity.Tag;
  */
 public interface TagService extends IService<Tag> {
 
+    Long add(String name);
 }
