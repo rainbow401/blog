@@ -32,13 +32,12 @@ public class ResponseResult<T> {
         return responseResult;
     }
 
-    public static <T> ResponseResult<T> fail(T data) {
+    public static <T> ResponseResult<T> fail(String message) {
 
         ResponseResult<T> responseResult = new ResponseResult<>();
-        responseResult.code = 200;
+        responseResult.code = 500;
         responseResult.success = false;
-        responseResult.message = "fail";
-        responseResult.data = data;
+        responseResult.message = message;
 
         return responseResult;
     }
@@ -46,7 +45,7 @@ public class ResponseResult<T> {
     public static <T> ResponseResult<T> fail() {
 
         ResponseResult<T> responseResult = new ResponseResult<>();
-        responseResult.code = 200;
+        responseResult.code = 500;
         responseResult.success = false;
         responseResult.message = "fail";
         responseResult.data = null;
@@ -57,7 +56,7 @@ public class ResponseResult<T> {
     public static <T> ResponseResult<T> fail(Integer code, String message) {
 
         ResponseResult<T> responseResult = new ResponseResult<>();
-        responseResult.code = 200;
+        responseResult.code = code;
         responseResult.success = false;
         responseResult.message = message;
         responseResult.data = null;

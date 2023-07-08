@@ -28,7 +28,7 @@ public class ServiceContextImpl implements ServiceContext {
     @Override
     public void extract(HttpServletRequest request) throws AuthorizationException {
         String header = request.getHeader(Token.TOKEN);
-        if (StringUtils.isNotBlank(header)) {
+        if (StringUtils.isBlank(header)) {
             throw new AuthorizationException();
         }
 
