@@ -1,23 +1,16 @@
 package com.blog.server.controller;
 
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.blog.common.dto.PageDTO;
 import com.blog.common.entity.Article;
-import com.blog.common.entity.BaseEntity;
 import com.blog.common.resopnse.ResponseResult;
-import com.blog.common.util.query.QueryParam;
-import com.blog.common.util.query.QueryUtil;
+import com.blog.server.annotation.Permission;
 import com.blog.server.dto.ArticleCreationDTO;
 import com.blog.server.dto.ArticleQueryDTO;
 import com.blog.server.dto.ArticleUpdateDTO;
 import com.blog.server.service.ArticleService;
 import com.blog.server.vo.ArticleVO;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -139,6 +132,7 @@ public class ArticleController {
      * 批量上传md
      * @param files md
      */
+    @Permission
     @PostMapping("/{tagId}/upload")
     public ResponseResult<Void> uploadMdArticle(
             @RequestPart("files") List<MultipartFile> files,

@@ -65,7 +65,8 @@ auth:
   exp: 3600000
   secret: s/*-.1263@
   issuer: rainbow
-  ignore-path:
+  excludePath:
     - /login
+    - /
 
 

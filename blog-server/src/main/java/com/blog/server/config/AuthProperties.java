@@ -1,8 +1,12 @@
 package com.blog.server.config;
 
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+@Data
 @ConfigurationProperties(prefix = "auth")
 @Component
 public class AuthProperties {
@@ -13,27 +17,7 @@ public class AuthProperties {
 
     private String issuer;
 
-    public Long getExp() {
-        return exp;
-    }
+    private List<String> excludePath;
 
-    public void setExp(Long exp) {
-        this.exp = exp;
-    }
-
-    public String getSecret() {
-        return secret;
-    }
-
-    public void setSecret(String secret) {
-        this.secret = secret;
-    }
-
-    public String getIssuer() {
-        return issuer;
-    }
-
-    public void setIssuer(String issuer) {
-        this.issuer = issuer;
-    }
+    private List<String> includePath;
 }

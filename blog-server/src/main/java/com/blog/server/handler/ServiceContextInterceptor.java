@@ -1,7 +1,9 @@
 package com.blog.server.handler;
 
+import com.blog.server.annotation.Permission;
 import com.blog.server.component.context.ServiceContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -21,7 +23,13 @@ public class ServiceContextInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        context.extract(request);
+        if(handler instanceof HandlerMethod) {
+            Permission annotation = ((HandlerMethod) handler).getMethod().getAnnotation(Permission.class);
+            if (annotation != null) {
+                context.extract(request);
+            }
+        }
+
         return true;
     }
 
