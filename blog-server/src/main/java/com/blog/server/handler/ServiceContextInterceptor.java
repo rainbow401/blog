@@ -2,6 +2,7 @@ package com.blog.server.handler;
 
 import com.blog.server.annotation.Permission;
 import com.blog.server.component.context.ServiceContext;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -22,9 +23,20 @@ public class ServiceContextInterceptor implements HandlerInterceptor {
     private ServiceContext context;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
+                             @NotNull Object handler) throws Exception {
         if(handler instanceof HandlerMethod) {
-            Permission annotation = ((HandlerMethod) handler).getMethod().getAnnotation(Permission.class);
+
+            Permission annotation;
+
+            // 获取方法上的权限注解
+            annotation = ((HandlerMethod) handler).getMethod().getAnnotation(Permission.class);
+
+            // 获取类上的权限注解
+            if (annotation == null) {
+                annotation = ((HandlerMethod) handler).getBeanType().getAnnotation(Permission.class);
+            }
+
             if (annotation != null) {
                 context.extract(request);
             }
@@ -34,7 +46,8 @@ public class ServiceContextInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+    public void postHandle(@NotNull HttpServletRequest request, @NotNull HttpServletResponse response,
+                           @NotNull Object handler, ModelAndView modelAndView) throws Exception {
         context.clear();
     }
 }

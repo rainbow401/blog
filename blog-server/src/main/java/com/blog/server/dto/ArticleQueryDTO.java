@@ -13,10 +13,6 @@ public class ArticleQueryDTO extends PageDTO {
 
     @QueryExpression(value = Type.EQ)
     private String tagId;
-
-    /**
-     * 仅看我自己
-     */
-    private Boolean myself;
-
+    @QueryExpression(value = Type.EQ)
+    private Long createBy;
 }

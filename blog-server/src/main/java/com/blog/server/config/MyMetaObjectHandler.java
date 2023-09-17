@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 
 /**
  * MybatisPlus 自动填充
+ *
  * @author yan zhihao
  */
 @Slf4j
@@ -21,14 +22,25 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
 
     private final ServiceContext ctx;
 
+    private final Long DEFAULT_USER_ID = -1L;
     @Override
     public void insertFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "createBy", Long.class, ctx.currentUserId()); // 起始版本 3.3.0(推荐使用)
-        this.strictInsertFill(metaObject, "updateBy", Long.class, ctx.currentUserId()); // 起始版本 3.3.0(推荐使用)
+        Long userId = ctx.currentUserId();
+        if (userId == null) {
+            userId = DEFAULT_USER_ID;
+        }
+
+        this.strictInsertFill(metaObject, "createBy", Long.class, userId); // 起始版本 3.3.0(推荐使用)
+        this.strictInsertFill(metaObject, "updateBy", Long.class, userId); // 起始版本 3.3.0(推荐使用)
     }
 
     @Override
     public void updateFill(MetaObject metaObject) {
-        this.strictInsertFill(metaObject, "update_by", Long.class, ctx.currentUserId()); // 起始版本 3.3.0(推荐使用)
+        Long userId = ctx.currentUserId();
+        if (userId == null) {
+            userId = DEFAULT_USER_ID;
+        }
+
+        this.strictInsertFill(metaObject, "update_by", Long.class, userId); // 起始版本 3.3.0(推荐使用)
     }
 }

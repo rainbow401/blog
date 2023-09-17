@@ -19,4 +19,9 @@ public interface ServiceContextInternal {
      * 存放信息
      */
     void extract(HttpServletRequest request) throws AuthenticationException;
+
+    /**
+     * 解析token获取userId
+     */
+    Long getUserIdWithExtract(HttpServletRequest request);
 }

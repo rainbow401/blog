@@ -6,7 +6,6 @@ import com.blog.server.exceptions.AuthorizationException;
 import com.blog.server.util.TokenStore;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 @Component
 public class ServiceContextImpl implements ServiceContext {
 
-    private static final ThreadLocal<Long> USERID = new ThreadLocal<>();
+    private static final ThreadLocal<Long> USER_ID = new ThreadLocal<>();
     private static final ThreadLocal<Token> TOKEN = new ThreadLocal<>();
 
     @Resource
@@ -27,17 +26,36 @@ public class ServiceContextImpl implements ServiceContext {
 
     @Override
     public void extract(HttpServletRequest request) throws AuthorizationException {
-        String header = request.getHeader(Token.TOKEN);
-        if (StringUtils.isBlank(header)) {
+        String authorizationHeader = request.getHeader(Token.TOKEN);
+        if (StringUtils.isBlank(authorizationHeader)) {
             throw new AuthorizationException();
         }
 
-        String tokenStr = header.substring(7);
-        Token token = tokenStore.extract(tokenStr);
-        if (token != null) {
-            TOKEN.set(token);
-            USERID.set(token.getUserid());
+        String tokenString = getTokenString(authorizationHeader);
+        Token token = tokenStore.extract(tokenString);
+
+        TOKEN.set(token);
+        USER_ID.set(token.getUserId());
+    }
+
+    private String getTokenString(String authorizationHeader) {
+        return authorizationHeader.substring(7);
+    }
+
+    @Override
+    public Long getUserIdWithExtract(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(Token.TOKEN);
+        if (StringUtils.isBlank(authorizationHeader)) {
+            return null;
         }
+
+        String tokenString = getTokenString(authorizationHeader);
+        Token token = tokenStore.extract(tokenString);
+
+        USER_ID.set(token.getUserId());
+        TOKEN.set(token);
+
+        return token.getUserId();
     }
 
     @Override
@@ -47,12 +65,12 @@ public class ServiceContextImpl implements ServiceContext {
 
     @Override
     public Long currentUserId() {
-        return USERID.get();
+        return USER_ID.get();
     }
 
     @Override
     public void clear() {
         TOKEN.remove();
-        USERID.remove();
+        USER_ID.remove();
     }
 }

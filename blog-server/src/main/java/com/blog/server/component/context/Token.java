@@ -22,5 +22,5 @@ public interface Token {
         }
     }
 
-    Long getUserid();
+    Long getUserId();
 }

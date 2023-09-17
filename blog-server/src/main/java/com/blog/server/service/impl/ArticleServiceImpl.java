@@ -55,16 +55,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     public Page<Article> page(ArticleQueryDTO dto) throws IllegalAccessException {
         QueryWrapper<Article> query = QueryUtil.convert(dto);
         Page<Article> page = new Page<>(dto.getPageNo(), dto.getPageSize());
-
-        if (dto.getMyself()) {
-            // 仅查看我自己
-            LambdaQueryWrapper<Article> lambdaQuery = query.lambda();
-            lambdaQuery.eq(BaseEntity::getCreateBy, ctx.currentUserId());
-
-            return articleMapper.selectPage(page, lambdaQuery);
-        } else {
-            return articleMapper.selectPage(page, query);
-        }
+        return articleMapper.selectPage(page, query);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -73,7 +64,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         LambdaQueryWrapper<Article> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(Article::getTitle, dto.getTitle());
-        if (articleMapper.selectList(queryWrapper).size() > 0) {
+        if (!articleMapper.selectList(queryWrapper).isEmpty()) {
             throw new IllegalStateException("文章标题重复，请重新填写");
         }
 

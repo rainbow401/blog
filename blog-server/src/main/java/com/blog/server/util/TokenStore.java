@@ -35,7 +35,7 @@ public class TokenStore {
         }
 
         @Override
-        public Long getUserid() {
+        public Long getUserId() {
             return userid;
         }
     }
