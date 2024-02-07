@@ -11,5 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QueryExpression {
 
-    Type value() default Type.EQ;
+    Type type() default Type.EQ;
+
+    Class<?>[] group() default Object.class;
 }

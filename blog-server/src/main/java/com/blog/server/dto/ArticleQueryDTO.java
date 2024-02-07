@@ -8,11 +8,12 @@ import lombok.Data;
 @Data
 public class ArticleQueryDTO extends PageDTO {
 
-    @QueryExpression(value = Type.LIKE)
+    @QueryExpression(type = Type.LIKE)
     private String title;
 
-    @QueryExpression(value = Type.EQ)
+    @QueryExpression(type = Type.EQ)
     private String tagId;
-    @QueryExpression(value = Type.EQ)
+
+    @QueryExpression(type = Type.EQ)
     private Long createBy;
 }

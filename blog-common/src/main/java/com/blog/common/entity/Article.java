@@ -38,4 +38,6 @@ public class Article extends BaseEntity {
      */
     @TableField(exist = false)
     private Long tagId;
+
+    private Long tenantId;
 }

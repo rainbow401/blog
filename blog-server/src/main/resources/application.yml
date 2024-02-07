@@ -23,7 +23,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       username: root
-      password: 12345678
+      password: 123456
       auto-commit: true
       connection-test-query: select 1
       connection-timeout: 30000

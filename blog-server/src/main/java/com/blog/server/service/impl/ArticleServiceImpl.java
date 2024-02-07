@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,13 +50,29 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private final ArticleTagService articleTagService;
 
+    private final HttpServletRequest request;
+
     private final ServiceContext ctx;
 
     @Override
     public Page<Article> page(ArticleQueryDTO dto) throws IllegalAccessException {
-        QueryWrapper<Article> query = QueryUtil.convert(dto);
+
+        if (ctx.getUserIdWithExtract(request) != null) {
+            return adminPage(dto);
+        }
+
+        LambdaQueryWrapper<Article> queryWrapper = QueryUtil.convertLambdaQuery(dto);
+        queryWrapper.eq(Article::getTenantId, -1L);
         Page<Article> page = new Page<>(dto.getPageNo(), dto.getPageSize());
-        return articleMapper.selectPage(page, query);
+
+        return articleMapper.selectPage(page, queryWrapper);
+    }
+
+    @Override
+    public Page<Article> adminPage(ArticleQueryDTO dto) throws IllegalAccessException {
+        LambdaQueryWrapper<Article> queryWrapper = QueryUtil.convertLambdaQuery(dto);
+        Page<Article> page = new Page<>(dto.getPageNo(), dto.getPageSize());
+        return articleMapper.selectPage(page, queryWrapper);
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -64,7 +81,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         LambdaQueryWrapper<Article> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(Article::getTitle, dto.getTitle());
-        if (!articleMapper.selectList(queryWrapper).isEmpty()) {
+        if (!articleMapper.exists(queryWrapper)) {
             throw new IllegalStateException("文章标题重复，请重新填写");
         }
 
@@ -172,7 +189,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void uploadMdArticle(Long tagId, List<MultipartFile> files) throws IOException {
+    public void uploadMdArticle(Long tagId, Long tenantId, List<MultipartFile> files) throws IOException {
 
         LambdaQueryWrapper<Tag> queryWrapper = Wrappers.lambdaQuery(Tag.class).eq(Tag::getId, tagId);
         boolean exists = tagMapper.exists(queryWrapper);
@@ -188,11 +205,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                             fileName.toLowerCase().endsWith(".markdown"),
                     "文件格式错误，只能导入`.md、.markdown`");
 
-            importMdArticle(file);
+            importMdArticle(tagId, tenantId, file);
         }
     }
 
-    private void importMdArticle(MultipartFile file) throws IOException {
+    private void importMdArticle(Long tagId, Long tenantId, MultipartFile file) throws IOException {
         String content = new String(file.getBytes());
 
         Assert.hasText(content, "文章内容不能为空");
@@ -214,6 +231,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         article.setContent(content);
         article.setTitle(title);
         article.setSummary(summary);
+        article.setTagId(tagId);
+        article.setTenantId(tenantId);
 
         articleMapper.insert(article);
     }

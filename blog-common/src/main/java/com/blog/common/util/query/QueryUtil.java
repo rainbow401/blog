@@ -1,12 +1,12 @@
 package com.blog.common.util.query;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -18,48 +18,96 @@ public class QueryUtil {
     private static final Map<Class<?>, Map<String, Type>>
             CLASS_QUERY_EXPRESSION_CACHE = new ConcurrentHashMap<>(256);
 
-    public static <T, R> QueryWrapper<T> convert(R data) throws IllegalAccessException {
+    private static final Map<Class<?>, Map<String, QueryExpression>>
+            CLASS_QUERY_EXPRESSION_ANNOTATION_CACHE = new ConcurrentHashMap<>(256);
+
+    public static <T, R> QueryWrapper<T> convert(R data, Class<?> groupClazz) throws IllegalAccessException {
         QueryWrapper<T> queryWrapper = Wrappers.query();
 
         // 获取data属性
         Class<?> clazz = data.getClass();
+        Map<String, QueryExpression> classQueryExpressionAnnotationMap = CLASS_QUERY_EXPRESSION_ANNOTATION_CACHE.get(clazz);
         Field[] fields = clazz.getDeclaredFields();
 
-        // 获取缓存
-        Map<String, Type> classExpression = CLASS_QUERY_EXPRESSION_CACHE.get(data.getClass());
-        if (classExpression != null) {
-            // 有缓存
+
+        if (classQueryExpressionAnnotationMap == null) {
+            classQueryExpressionAnnotationMap = new HashMap<>();
             for (Field field : fields) {
+
                 field.setAccessible(true);
-                Object value = field.get(data);
-                String name = field.getName();
-                if (value != null) {
-                    Type queryExpressionValue = classExpression.getOrDefault(field.getName(), Type.EQ);
-                    setExpression(queryWrapper, name, queryExpressionValue, value);
+
+                QueryExpression annotation = field.getAnnotation(QueryExpression.class);
+                if (annotation == null) {
+                    continue;
                 }
+
+                String fieldName = field.getName();
+                classQueryExpressionAnnotationMap.put(fieldName, annotation);
+
+                Object fieldValue = field.get(data);
+                if (isIllegalValue(fieldValue)) {
+                    continue;
+                }
+
+                Type type = annotation.type();
+                Class<?>[] group = annotation.group();
+                List<Class<?>> groupList = Arrays.asList(group);
+                if (!groupList.contains(groupClazz)) {
+                    continue;
+                }
+
+                setExpression(queryWrapper, fieldName, type, fieldValue);
             }
+
+            CLASS_QUERY_EXPRESSION_ANNOTATION_CACHE.put(clazz, classQueryExpressionAnnotationMap);
         } else {
-            // 没有缓存
             for (Field field : fields) {
+
                 field.setAccessible(true);
-                Object value = field.get(data);
-                if (value != null) {
 
-                    String name = field.getName();
-                    Type queryExpressionValue = getOrDefault(field, Type.EQ);
+                String fieldName = field.getName();
 
-                    // 保存缓存
-                    Map<String, Type> cache = CLASS_QUERY_EXPRESSION_CACHE
-                                    .computeIfAbsent(clazz, (key) -> new HashMap<>());
-                    cache.put(name, queryExpressionValue);
+                QueryExpression annotation = classQueryExpressionAnnotationMap.get(fieldName);
 
-                    // 设置queryWrapper
-                    setExpression(queryWrapper, name, queryExpressionValue, value);
+                Object fieldValue = field.get(data);
+                if (isIllegalValue(fieldValue)) {
+                    continue;
                 }
+
+                Type type = annotation.type();
+                Class<?>[] group = annotation.group();
+                List<Class<?>> groupList = Arrays.asList(group);
+                if (!groupList.contains(groupClazz)) {
+                    continue;
+                }
+
+                setExpression(queryWrapper, fieldName, type, fieldValue);
             }
         }
 
         return queryWrapper;
+    }
+
+    private static Boolean isIllegalValue(Object fieldValue) throws IllegalAccessException {
+        if (fieldValue == null) {
+            return true;
+        }
+
+        if (fieldValue instanceof String) {
+            return StringUtils.isBlank((String) fieldValue);
+        }
+
+        return false;
+    }
+
+    public static <T, R> LambdaQueryWrapper<T> convertLambdaQuery(R data) throws IllegalAccessException {
+        QueryWrapper<T> queryWrapper = convert(data, Object.class);
+        return queryWrapper.lambda();
+    }
+
+    public static <T, R> LambdaQueryWrapper<T> convertLambdaQuery(R data, Class<?> groupClazz) throws IllegalAccessException {
+        QueryWrapper<T> queryWrapper = convert(data, groupClazz);
+        return queryWrapper.lambda();
     }
 
 
@@ -69,12 +117,10 @@ public class QueryUtil {
         return queryWrapper;
     }
 
-    private static Type getOrDefault(Field field, Type type) {
-        QueryExpression annotation = field.getAnnotation(QueryExpression.class);
-        return annotation != null ? annotation.value() : type;
-    }
-
     private static <T> void setExpression(QueryWrapper<T> queryWrapper, String fieldName, Type queryExpressionValue, Object value) {
+
+        fieldName = camelToSnake(fieldName);
+
         switch (queryExpressionValue) {
             case EQ: {
                 queryWrapper.eq(fieldName, value);
@@ -117,5 +163,21 @@ public class QueryUtil {
                 break;
             }
         }
+    }
+
+    public static String camelToSnake(String camelCase) {
+        StringBuilder snakeCase = new StringBuilder();
+        char[] chars = camelCase.toCharArray();
+
+        for (char c : chars) {
+            // Convert uppercase letter to underscore followed by lowercase letter
+            if (Character.isUpperCase(c)) {
+                snakeCase.append('_').append(Character.toLowerCase(c));
+            } else {
+                snakeCase.append(c);
+            }
+        }
+
+        return snakeCase.toString();
     }
 }

@@ -8,7 +8,7 @@ public class Test {
         Demo demo = new Demo();
         demo.setTitle("1");
 
-        QueryWrapper<Test> convert = QueryUtil.convert(demo);
+        QueryWrapper<Test> convert = QueryUtil.convert(demo, Object.class);
     }
 
 

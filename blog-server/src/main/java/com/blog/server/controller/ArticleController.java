@@ -42,10 +42,8 @@ public class ArticleController {
      * @param dto 分页参数
      * @return ResponseResult<Page<Article>>
      */
-    @GetMapping("/page")
-    public ResponseResult<Page<Article>> page(@RequestBody ArticleQueryDTO dto, HttpServletRequest request) throws IllegalAccessException {
-        Long userId = ctx.getUserIdWithExtract(request);
-        dto.setCreateBy(userId);
+    @PostMapping("/page")
+    public ResponseResult<Page<Article>> page(@RequestBody ArticleQueryDTO dto) throws IllegalAccessException {
         return ResponseResult.success(articleService.page(dto));
     }
 
@@ -102,8 +100,8 @@ public class ArticleController {
     public ResponseResult<Void> uploadMdArticle(
             @RequestPart("files") List<MultipartFile> files,
             @PathVariable("tagId") Long tagId,
-            @RequestParam Boolean status) throws IOException {
-        articleService.uploadMdArticle(tagId, files);
+            @RequestParam(required = false) Long tenantId) throws IOException {
+        articleService.uploadMdArticle(tagId, tenantId, files);
         return ResponseResult.success();
     }
 

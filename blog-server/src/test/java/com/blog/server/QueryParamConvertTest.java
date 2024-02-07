@@ -19,7 +19,7 @@ class QueryParamConvertTest {
 	void contextLoads() throws IllegalAccessException {
 		Demo demo = new Demo();
 		demo.setTitle("sdsad");
-		QueryWrapper<Article> convert = QueryUtil.convert(demo);
+		QueryWrapper<Article> convert = QueryUtil.convert(demo, Object.class);
 
 		articleMapper.selectList(convert);
 	}

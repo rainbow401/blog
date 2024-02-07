@@ -24,6 +24,9 @@ public interface ArticleService extends IService<Article> {
 
     Page<Article> page(ArticleQueryDTO dto) throws IllegalAccessException;
 
+
+    Page<Article> adminPage(ArticleQueryDTO dto) throws IllegalAccessException;
+
     Long addArticle(ArticleCreationDTO dto);
 
     ArticleVO findById(String articleId);
@@ -38,5 +41,5 @@ public interface ArticleService extends IService<Article> {
 
     void cancelCollectArticle(Long id);
 
-    void uploadMdArticle(Long tagId, List<MultipartFile> files) throws IOException;
+    void uploadMdArticle(Long tagId, Long tenantId, List<MultipartFile> files) throws IOException;
 }

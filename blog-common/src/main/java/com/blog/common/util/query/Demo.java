@@ -5,6 +5,6 @@ import lombok.Data;
 @Data
 public class Demo {
 
-    @QueryExpression(value = Type.EQ)
+    @QueryExpression(type = Type.EQ)
     private String title;
 }
